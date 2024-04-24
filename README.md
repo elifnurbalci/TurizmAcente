@@ -1,3 +1,18 @@
+To do list:
+- make reservation
+- add user - update user - delete user
+
+Completed list:
+- employee/admin login
+- add hotel - edit hotel - delete hotel
+- hotel list
+- add room
+- db connection
+- all UI 
+- error / success messages
+
+
+
 Database: PostgreSQL
 Frontend: Swing
 Backend: Java
