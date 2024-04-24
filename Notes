@@ -1,0 +1,54 @@
+Main Application Structure
+Main
+
+Initiates the application.
+Loads LoginPanel.
+GUI Classes (Extending JPanel)
+
+LoginPanel
+Redirects to DashboardPanel on successful login.
+DashboardPanel
+Contains tabs or navigation to:
+UserManagementPanel
+HotelManagementPanel
+RoomManagementPanel
+SeasonManagementPanel
+ReservationPanel
+UserManagementPanel
+Interacts with dao.UserDAO for user data.
+HotelManagementPanel
+Interacts with dao.HotelDAO for hotel data.
+RoomManagementPanel
+Interacts with dao.RoomDAO for room data.
+SeasonManagementPanel
+Interacts with dao.SeasonDAO for season data.
+ReservationPanel
+Interacts with dao.ReservationDAO for reservation data.
+Data Classes
+
+entities.User
+entities.Hotel
+entities.Room
+entities.Season
+entities.PensionType
+Reservation
+DAO Classes (Data Access Object)
+
+dao.UserDAO
+Interacts with dataAccess.DatabaseConnection.
+dao.HotelDAO
+Interacts with dataAccess.DatabaseConnection.
+dao.RoomDAO
+Interacts with dataAccess.DatabaseConnection.
+dao.SeasonDAO
+Interacts with dataAccess.DatabaseConnection.
+dao.PensionTypeDAO
+Interacts with dataAccess.DatabaseConnection.
+dao.ReservationDAO
+Interacts with dataAccess.DatabaseConnection.
+Utilities
+
+dataAccess.DatabaseConnection
+Provides connection for DAO classes.
+ui.Utils
+Provides utility functions used across the system.
