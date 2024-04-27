@@ -1,20 +1,25 @@
 import ui.LoginView;
-
 import javax.swing.*;
 
 public class Main {
 
     public static void main(String[] args) {
-        // Create the main frame for the application
-        JFrame mainFrame = new JFrame("Tourism Agency System");
-        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        mainFrame.setSize(800, 600);
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            System.err.println("Failed to set look and feel.");
+        }
 
-        // Create a new LoginPanel instance and set it as the content pane
-        LoginView loginPanel = new LoginView(mainFrame);
+        JFrame mainFrame = new JFrame();
+        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        LoginView loginPanel = new LoginView();
         mainFrame.setContentPane(loginPanel);
 
-        // Make the frame visible to the user
+        mainFrame.pack();
+        mainFrame.setSize(800, 600);
+        mainFrame.setLocationRelativeTo(null);
+
         mainFrame.setVisible(true);
     }
 }
