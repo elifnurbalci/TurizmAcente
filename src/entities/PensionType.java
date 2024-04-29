@@ -12,7 +12,6 @@ public class PensionType {
         this.name = name;
     }
 
-    // Getters and Setters
     public int getId() {
         return id;
     }
@@ -27,5 +26,9 @@ public class PensionType {
 
     public void setName(String name) {
         this.name = name;
+    }
+    @Override
+    public String toString() {
+        return this.name;
     }
 }

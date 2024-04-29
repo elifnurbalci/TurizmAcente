@@ -98,7 +98,7 @@ public class LoginView extends JFrame {
                 AdminUserView adminView = new AdminUserView();
                 adminView.setVisible(true);
                 break;
-            case "agent":
+            case "employee":
                 EmployeeView employeeView = new EmployeeView();
                 employeeView.setVisible(true);
                 break;

@@ -1,14 +1,11 @@
 package ui;
 
 import business.HotelManager;
-import business.PensionTypeManager;
-import business.RoomManager;
 import business.SeasonManager;
 import dao.PensionTypeDao;
-import dao.SeasonDao;
+import dataAccess.Helper;
 import entities.Hotel;
 import entities.PensionType;
-import entities.Room;
 import entities.Season;
 
 import javax.swing.*;
@@ -17,427 +14,368 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class HotelView extends JFrame {
-    private JPanel container, w_top,w_bottom, tab_hotel_add, w_hotel_add_top,w_hotel_add_bottom,w_hotel_add_mid,tab_add_room_price,w_add_room_price,w_season_winter,tab_hotel_list;
-    private JTabbedPane tab_pnl_main;
-    private JTextField fld_hotel_name, fld_hotel_mail, fld_hotel_phone, fld_hotel_address,textField1,textField2,fld_hotel_city,fld_hotel_region;
-    private JCheckBox cbox_carpark, cbox_concierge, cbox_wifi, cbox_spa, cbox_swimming_pool, cbox_room_service, cbox_fitness,doubleRoom2PeopleCheckBox,suiteRoom4PeopleCheckBox,juniorSuiteRoom3CheckBox,singleRoom1PersonCheckBox,bedAndBreakfastCheckBox,halfBoardCheckBox,fullBoardCheckBox,allInclusiveCheckBox,cbox_tv,cbox_minibar,cbox_game_console,cbox_cash_box,cbox_projection;
-    private JComboBox<String> cbox_single_room_quota,cbox_double_room_quota,cbox_junior_suite_room_quota,cbox_suite_room_quota,cbox_select_room_type,combo_star_rate,comboBox1,cbox_select_season,cbox_select_hotel;
-    private JTable tbl_hotel_list;
-    private JButton btnAddOrUpdate, btn_add_hotel, btn_cancel_hotel_add, btn_cancel_hotel_list,btn_add_room_cancel,btn_add_room_price,btnSaveRoom;
-    private JLabel lbl_hotel_name,lbl_title,lbl_hotel_mail,lbl_hotel_phone,lbl_hotel_address,lbl_star_rate,lbl_room_title,lbl_quota,lbl_,lbl_select_season,lbl_select_room_type,lbl_select_pension,lbl_adult_price,lbl_children_price,lbl_select_hotel;
+    private JPanel mainPanel;
+    private JTextField fldHotelName, fldHotelEmail, fldHotelPhone, fldHotelAddress, fldHotelCity, fldHotelRegion;
+    private JComboBox<String> comboStarRating;
+    private List<JCheckBox> pensionTypeCheckboxes;
+    private JCheckBox chkCarPark, chkWifi, chkPool, chkFitness, chkConcierge, chkSpa, chkRoomService;
+    private JButton btnSave, btnCancel,btnDelete,btnClear;
+    private JTable tblHotels;
     private HotelManager hotelManager;
-    private Hotel currentHotel;
-    private RoomManager roomManager;
-    private SeasonManager seasonManager;
-    private PensionTypeManager pensionTypeManager;
-
-    // New UI components for the Room Management tab
-    private JComboBox<Hotel> hotelComboBox;
-    private JComboBox<Season> seasonComboBox;
-    private JComboBox<PensionType> pensionComboBox;
-    private JComboBox<String> roomTypeComboBox;
-    private JTextField adultPriceField;
-    private JTextField childPriceField;
-    private JCheckBox tvCheckBox;
-    private JCheckBox minibarCheckBox;
-    private JTextField capacityField,stockField;
-    private JTextField squareMeterField;
-    private JCheckBox gameConsoleCheckBox;
-    private JCheckBox cashBoxCheckBox;
-    private JCheckBox projectionCheckBox;
+    private PensionTypeDao pensionTypeDao;
+    private List<Season> allSeasons;
+    private JPanel seasonPanel;
+    private List<JCheckBox> seasonCheckboxes;
+    private JPanel pensionTypesPanel;
+    private int selectedHotelId = -1;
 
     public HotelView() {
         hotelManager = new HotelManager();
-        roomManager = new RoomManager();
-        seasonManager = new SeasonManager();
-        pensionTypeManager = new PensionTypeManager();
-
+        pensionTypeDao = new PensionTypeDao();
         initializeComponents();
-        initializeListeners();
-        loadHotelTable();
-        setFrameProperties();
-    }
-    private void initializeComponents() {
-        container = new JPanel(new BorderLayout());
-        tab_pnl_main = new JTabbedPane();
-
-        JPanel hotelInfoPanel = createHotelInfoPanel();
-        tab_pnl_main.addTab("Hotel Info", hotelInfoPanel);
-
-        JPanel hotelListPanel = createHotelListPanel();
-        tab_pnl_main.addTab("Hotel List", hotelListPanel);
-
-        JPanel roomPanel = createRoomPanel();
-        tab_pnl_main.addTab("Room Management", roomPanel);
-
-        container.add(tab_pnl_main);
-        setContentPane(container);
-    }
-
-    private JPanel createHotelInfoPanel() {
-        JPanel panel = new JPanel(new GridLayout(0, 2, 10, 10));
-
-        fld_hotel_name = new JTextField();
-        fld_hotel_mail = new JTextField();
-        fld_hotel_phone = new JTextField();
-        fld_hotel_address = new JTextField();
-        fld_hotel_city = new JTextField();
-        fld_hotel_region = new JTextField();
-        combo_star_rate = new JComboBox<>(new String[]{"1 Star", "2 Stars", "3 Stars", "4 Stars", "5 Stars"});
-
-        cbox_carpark = new JCheckBox("Car Park");
-        cbox_concierge = new JCheckBox("Concierge");
-        cbox_wifi = new JCheckBox("Wi-Fi");
-        cbox_spa = new JCheckBox("Spa");
-        cbox_swimming_pool = new JCheckBox("Swimming Pool");
-        cbox_room_service = new JCheckBox("Room Service");
-        cbox_fitness = new JCheckBox("Fitness Center");
-
-        panel.add(new JLabel("Hotel Name:"));
-        panel.add(fld_hotel_name);
-        panel.add(new JLabel("City:"));
-        panel.add(fld_hotel_city);
-        panel.add(new JLabel("Region:"));
-        panel.add(fld_hotel_region);
-        panel.add(new JLabel("Address:"));
-        panel.add(fld_hotel_address);
-        panel.add(new JLabel("Email:"));
-        panel.add(fld_hotel_mail);
-        panel.add(new JLabel("Phone:"));
-        panel.add(fld_hotel_phone);
-        panel.add(new JLabel("Star Rating:"));
-        panel.add(combo_star_rate);
-        panel.add(cbox_carpark);
-        panel.add(cbox_concierge);
-        panel.add(cbox_wifi);
-        panel.add(cbox_spa);
-        panel.add(cbox_swimming_pool);
-        panel.add(cbox_room_service);
-        panel.add(cbox_fitness);
-
-        btnAddOrUpdate = new JButton("Save");
-        btn_cancel_hotel_add = new JButton("Cancel");
-        panel.add(btnAddOrUpdate);
-        panel.add(btn_cancel_hotel_add);
-
-        return panel;
-    }
-
-    private JPanel createHotelListPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        tbl_hotel_list = new JTable(new DefaultTableModel(
-                new Object[][] {},
-                new String[] {"Hotel ID", "Hotel Name", "City", "Region", "Address", "Email", "Phone", "Star Rate", "Car Park", "WIFI", "Pool", "Fitness", "Concierge", "SPA", "Room Service"}
-        ));
-        tbl_hotel_list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        JScrollPane scrollPane = new JScrollPane(tbl_hotel_list);
-        panel.add(scrollPane, BorderLayout.CENTER);
-
-        JPanel buttonPanel = new JPanel();
-        JButton btnDeleteHotel = new JButton("Delete Hotel");
-        JButton btnUpdateHotel = new JButton("Update Hotel");
-        buttonPanel.add(btnUpdateHotel);
-        buttonPanel.add(btnDeleteHotel);
-        panel.add(buttonPanel, BorderLayout.SOUTH);
-
-        btnUpdateHotel.addActionListener(e -> updateSelectedHotel());
-        btnDeleteHotel.addActionListener(e -> deleteSelectedHotel());
-
-        return panel;
-    }
-
-    private void updateSelectedHotel() {
-        int row = tbl_hotel_list.getSelectedRow();
-        if (row == -1) {
-            JOptionPane.showMessageDialog(this, "Please select a hotel to update.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        int hotelId = (int) tbl_hotel_list.getValueAt(row, 0);
-        currentHotel = hotelManager.getByID(hotelId);
-        if (currentHotel != null) {
-            loadHotelData(currentHotel);
-            btnAddOrUpdate.setText("Update");
-            tab_pnl_main.setSelectedIndex(0);
-        } else {
-            JOptionPane.showMessageDialog(this, "Hotel not found.", "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    private void deleteSelectedHotel() {
-        int row = tbl_hotel_list.getSelectedRow();
-        if (row == -1) {
-            JOptionPane.showMessageDialog(this, "Please select a hotel to delete.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        int hotelId = (int) tbl_hotel_list.getValueAt(row, 0);
-        if (hotelManager.delete(hotelId)) {
-            JOptionPane.showMessageDialog(this, "Hotel successfully deleted.");
-            loadHotelTable();
-        } else {
-            JOptionPane.showMessageDialog(this, "Failed to delete hotel.", "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    private void addOrUpdateHotel() {
-        if (validateFields()) {
-            Hotel hotel = (currentHotel == null) ? new Hotel() : currentHotel;
-            populateHotelData(hotel);
-            boolean success = (currentHotel == null) ? hotelManager.save(hotel) : hotelManager.update(hotel);
-            if (success) {
-                JOptionPane.showMessageDialog(this, (currentHotel == null) ? "Hotel added successfully!" : "Hotel updated successfully!");
-                loadHotelTable();
-                clearForm();
-                currentHotel = null;  // Reset the current hotel
-                btnAddOrUpdate.setText("Save");  // Reset button text to "Save"
-            } else {
-                JOptionPane.showMessageDialog(this, "Failed to save hotel.", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        }
-    }
-
-    private boolean validateFields() {
-        if (fld_hotel_name.getText().trim().isEmpty() || fld_hotel_mail.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Name and Email are required.", "Error", JOptionPane.ERROR_MESSAGE);
-            return false;
-        }
-        return true;
-    }
-
-    private void populateHotelData(Hotel hotel) {
-        hotel.setName(fld_hotel_name.getText().trim());
-        hotel.setEmail(fld_hotel_mail.getText().trim());
-        hotel.setPhone(fld_hotel_phone.getText().trim());
-        hotel.setAddress(fld_hotel_address.getText().trim());
-        hotel.setCity(fld_hotel_city.getText().trim());
-        hotel.setRegion(fld_hotel_region.getText().trim());
-        hotel.setStarRating((String) combo_star_rate.getSelectedItem());
-        hotel.setCarPark(cbox_carpark.isSelected());
-        hotel.setWifi(cbox_wifi.isSelected());
-        hotel.setPool(cbox_swimming_pool.isSelected());
-        hotel.setFitness(cbox_fitness.isSelected());
-        hotel.setConcierge(cbox_concierge.isSelected());
-        hotel.setSpa(cbox_spa.isSelected());
-        hotel.setRoomService(cbox_room_service.isSelected());
-    }
-
-    private void loadHotelData(Hotel hotel) {
-        fld_hotel_name.setText(hotel.getName());
-        fld_hotel_mail.setText(hotel.getEmail());
-        fld_hotel_phone.setText(hotel.getPhone());
-        fld_hotel_address.setText(hotel.getAddress());
-        fld_hotel_city.setText(hotel.getCity());
-        fld_hotel_region.setText(hotel.getRegion());
-        combo_star_rate.setSelectedItem(hotel.getStarRating());
-        cbox_carpark.setSelected(hotel.getCarPark());
-        cbox_wifi.setSelected(hotel.getWifi());
-        cbox_swimming_pool.setSelected(hotel.getPool());
-        cbox_fitness.setSelected(hotel.getFitness());
-        cbox_concierge.setSelected(hotel.getConcierge());
-        cbox_spa.setSelected(hotel.getSpa());
-        cbox_room_service.setSelected(hotel.getRoomService());
-    }
-
-    private void initializeListeners() {
-        btn_cancel_hotel_add.addActionListener(e -> clearForm());
-        btn_cancel_hotel_list.addActionListener(e -> dispose());
-        btnAddOrUpdate.addActionListener(e -> addOrUpdateHotel());
-    }
-
-    private void clearForm() {
-        fld_hotel_name.setText("");
-        fld_hotel_mail.setText("");
-        fld_hotel_phone.setText("");
-        fld_hotel_address.setText("");
-        fld_hotel_city.setText("");
-        fld_hotel_region.setText("");
-        combo_star_rate.setSelectedIndex(0);
-        cbox_carpark.setSelected(false);
-        cbox_concierge.setSelected(false);
-        cbox_wifi.setSelected(false);
-        cbox_spa.setSelected(false);
-        cbox_swimming_pool.setSelected(false);
-        cbox_room_service.setSelected(false);
-        cbox_fitness.setSelected(false);
-        btnAddOrUpdate.setText("Save"); // Reset button text to "Save"
-        currentHotel = null; // Clear the current hotel object
-    }
-
-    private void loadHotelTable() {
-        ArrayList<Object[]> hotelList = hotelManager.getForTable(15);
-        DefaultTableModel model = (DefaultTableModel) tbl_hotel_list.getModel();
-        model.setRowCount(0);
-        for (Object[] row : hotelList) {
-            model.addRow(row);
-        }
-    }
-
-    private void setFrameProperties() {
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setSize(1200, 800);
-        setLocationRelativeTo(null); // Center on screen
+        setupLayout();
+        initListeners();
+        updateTable();
+        setSize(1200, 600);
+        setLocationRelativeTo(null);
         setVisible(true);
-    }
-    private void populateRoomTypes(JComboBox<String> comboBox) {
-        String[] roomTypes = {"single-room", "double-room", "junior suite room", "suite room"};
-        for (String type : roomTypes) {
-            comboBox.addItem(type);
-        }
-    }
-    private JPanel createRoomPanel() {
-        JPanel panel = new JPanel(new GridLayout(0, 2, 10, 10));
-        hotelComboBox = new JComboBox<>();
-        seasonComboBox = new JComboBox<>();
-        pensionComboBox = new JComboBox<>();
-        roomTypeComboBox = new JComboBox<>(new String[]{"single-room", "double-room", "junior suite room", "suite room"});
-        capacityField = new JTextField();
-        squareMeterField = new JTextField();
-        stockField = new JTextField(); // Stock field initialize edildi
-        gameConsoleCheckBox = new JCheckBox("Has Game Console");
-        cashBoxCheckBox = new JCheckBox("Has Cash Box");
-        projectionCheckBox = new JCheckBox("Has Projection");
 
-
-        loadHotelData();
-        loadSeasonData();
-        loadPensionTypeData();
-        setComboBoxRenderer();
-
-        adultPriceField = new JTextField();
-        childPriceField = new JTextField();
-        tvCheckBox = new JCheckBox("Has TV");
-        minibarCheckBox = new JCheckBox("Has Minibar");
-        btnSaveRoom = new JButton("Save Room");
-
-        addRoomManagementComponents(panel);
-
-        btnSaveRoom.addActionListener(e -> saveRoom());
-        panel.add(btnSaveRoom);
-        return panel;
     }
 
-    private void loadHotelData() {
-        List<Hotel> hotels = hotelManager.findAll();
-        hotelComboBox.setModel(new DefaultComboBoxModel<>(hotels.toArray(new Hotel[0])));
+    private void initializeComponents() {
+        mainPanel = new JPanel();
+        fldHotelName = new JTextField(20);
+        fldHotelEmail = new JTextField(20);
+        fldHotelPhone = new JTextField(20);
+        fldHotelAddress = new JTextField(20);
+        fldHotelCity = new JTextField(20);
+        fldHotelRegion = new JTextField(20);
+        comboStarRating = new JComboBox<>(new String[]{"1 Star", "2 Stars", "3 Stars", "4 Stars", "5 Stars"});
+        pensionTypeCheckboxes = new ArrayList<>();
+        seasonCheckboxes = new ArrayList<>();
+
+        chkCarPark = new JCheckBox("Car Park");
+        chkWifi = new JCheckBox("Wi-Fi");
+        chkPool = new JCheckBox("Swimming Pool");
+        chkFitness = new JCheckBox("Fitness Center");
+        chkConcierge = new JCheckBox("Concierge");
+        chkSpa = new JCheckBox("Spa");
+        chkRoomService = new JCheckBox("Room Service");
+
+        btnSave = new JButton("SAVE");
+        btnCancel = new JButton("CANCEL");
+        btnDelete = new JButton("DELETE");
+        btnClear = new JButton("CLEAR");
+
+        tblHotels = new JTable();
+        setupTable();
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setContentPane(mainPanel);
+        pack();
     }
 
-    private void loadSeasonData() {
-        List<Season> seasons = seasonManager.getAllSeasons();
-        seasonComboBox.setModel(new DefaultComboBoxModel<>(seasons.toArray(new Season[0])));
+
+
+    private void setupLayout() {
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+
+        JPanel formPanel = new JPanel(new GridLayout(0, 2, 10, 10));
+        formPanel.add(new JLabel("Hotel Name:"));
+        formPanel.add(fldHotelName);
+        formPanel.add(new JLabel("Hotel City:"));
+        formPanel.add(fldHotelCity);
+        formPanel.add(new JLabel("Hotel Region:"));
+        formPanel.add(fldHotelRegion);
+        formPanel.add(new JLabel("Hotel Address:"));
+        formPanel.add(fldHotelAddress);
+        formPanel.add(new JLabel("Hotel Email:"));
+        formPanel.add(fldHotelEmail);
+        formPanel.add(new JLabel("Hotel Phone:"));
+        formPanel.add(fldHotelPhone);
+        formPanel.add(new JLabel("Star Rating:"));
+        formPanel.add(comboStarRating);
+
+        mainPanel.add(formPanel);
+
+        JPanel amenitiesPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        amenitiesPanel.add(chkCarPark);
+        amenitiesPanel.add(chkWifi);
+        amenitiesPanel.add(chkPool);
+        amenitiesPanel.add(chkFitness);
+        amenitiesPanel.add(chkConcierge);
+        amenitiesPanel.add(chkSpa);
+        amenitiesPanel.add(chkRoomService);
+        mainPanel.add(amenitiesPanel);
+
+        loadPensionTypes();
+        loadSeasons();
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        buttonPanel.add(btnCancel);
+        buttonPanel.add(btnClear);
+        buttonPanel.add(btnSave);
+        buttonPanel.add(btnDelete);
+
+        mainPanel.add(buttonPanel);
+
+        JScrollPane scrollPane = new JScrollPane(tblHotels);
+        mainPanel.add(scrollPane);
     }
 
-    private void loadPensionTypeData() {
-        List<PensionType> pensionTypes = pensionTypeManager.getAllPensionTypes();
-        pensionComboBox.setModel(new DefaultComboBoxModel<>(pensionTypes.toArray(new PensionType[0])));
+
+    private void setupTable() {
+        DefaultTableModel model = new DefaultTableModel(
+                new Object[][]{},
+                new String[]{"ID", "Name", "City", "Region", "Address", "Email", "Phone", "Star Rating","Car Park", "WIFI", "Pool", "Fitness Center", "Concierge", "Spa", "Room Service"}
+        );
+        tblHotels.setModel(model);
     }
 
-    private void setComboBoxRenderer() {
-        hotelComboBox.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (value instanceof Hotel) {
-                    setText(((Hotel) value).getName());
-                }
-                return this;
-            }
-        });
-
-        seasonComboBox.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (value instanceof Season) {
-                    setText(((Season) value).getName());
-                }
-                return this;
-            }
-        });
-
-        pensionComboBox.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (value instanceof PensionType) {
-                    setText(((PensionType) value).getName());
-                }
-                return this;
-            }
-        });
-    }
-
-    private void addRoomManagementComponents(JPanel panel) {
-        panel.add(new JLabel("Select Hotel:"));
-        panel.add(hotelComboBox);
-        panel.add(new JLabel("Select Pension Type:"));
-        panel.add(pensionComboBox);
-        panel.add(new JLabel("Select Season:"));
-        panel.add(seasonComboBox);
-        panel.add(new JLabel("Room Type:"));
-        panel.add(roomTypeComboBox);
-        panel.add(new JLabel("Room Stock:"));
-        panel.add(stockField);
-        panel.add(new JLabel("Adult Price:"));
-        panel.add(adultPriceField);
-        panel.add(new JLabel("Child Price:"));
-        panel.add(childPriceField);
-        panel.add(new JLabel("Capacity:"));
-        panel.add(capacityField);
-        panel.add(new JLabel("Square Meter:"));
-        panel.add(squareMeterField);
-        panel.add(tvCheckBox);
-        panel.add(minibarCheckBox);
-        panel.add(projectionCheckBox);
-        panel.add(gameConsoleCheckBox);
-        panel.add(cashBoxCheckBox);
-        panel.add(btnSaveRoom);
-    }
-
-    private void saveRoom() {
-        try {
-            Room room = new Room();
-            room.setHotelId(((Hotel) hotelComboBox.getSelectedItem()).getId());
-            room.setSeasonId(((Season) seasonComboBox.getSelectedItem()).getId());
-            room.setPensionId(((PensionType) pensionComboBox.getSelectedItem()).getId());
-            room.setType((String) roomTypeComboBox.getSelectedItem());
-            room.setPriceAdult(Double.parseDouble(adultPriceField.getText().trim()));
-            room.setPriceChild(Double.parseDouble(childPriceField.getText().trim()));
-            room.setTelevision(tvCheckBox.isSelected());
-            room.setMinibar(minibarCheckBox.isSelected());
-            room.setStock(Integer.parseInt(stockField.getText().trim())); // Kullanıcıdan stok sayısını al
-
-            if (roomManager.save(room)) {
-                JOptionPane.showMessageDialog(this, "Room saved successfully!");
-                clearRoomForm();
+    private void initListeners() {
+        btnSave.addActionListener(e -> saveHotel());
+        btnCancel.addActionListener(e -> dispose());
+        btnDelete.addActionListener(e -> deleteHotel());
+        btnClear.addActionListener(e -> clearForm());
+        tblHotels.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting() && tblHotels.getSelectedRow() != -1) {
+                fillFieldsWithSelectedHotel(tblHotels.getSelectedRow());
             } else {
-                JOptionPane.showMessageDialog(this, "Failed to save room.", "Error", JOptionPane.ERROR_MESSAGE);
+                clearForm();
             }
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Invalid number format in price or stock fields.", "Error", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error saving room: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        });
+    }
+
+
+    private void fillFieldsWithSelectedHotel(int selectedRow) {
+        DefaultTableModel model = (DefaultTableModel) tblHotels.getModel();
+        int hotelId = (int) model.getValueAt(selectedRow, 0);
+        Hotel hotel = hotelManager.getByID(hotelId);
+
+        if (hotel != null) {
+            selectedHotelId = hotel.getId();
+
+            fldHotelName.setText(hotel.getName());
+            fldHotelCity.setText(hotel.getCity());
+            fldHotelRegion.setText(hotel.getRegion());
+            fldHotelAddress.setText(hotel.getAddress());
+            fldHotelEmail.setText(hotel.getEmail());
+            fldHotelPhone.setText(hotel.getPhone());
+            comboStarRating.setSelectedItem(hotel.getStarRating());
+
+            chkCarPark.setSelected(hotel.getCarPark());
+            chkWifi.setSelected(hotel.getWifi());
+            chkPool.setSelected(hotel.getPool());
+            chkFitness.setSelected(hotel.getFitness());
+            chkConcierge.setSelected(hotel.getConcierge());
+            chkSpa.setSelected(hotel.getSpa());
+            chkRoomService.setSelected(hotel.getRoomService());
+
+            setPensionTypeCheckboxes(hotel.getId());
+            setSeasonCheckboxes(hotel.getId());
+
+            btnSave.setText("UPDATE");
+            selectedHotelId = hotel.getId();
+        } else {
+            Helper.showMessage("Error: Hotel not found.");
+            clearForm();
         }
     }
 
 
-    private void clearRoomForm() {
-        adultPriceField.setText("");
-        childPriceField.setText("");
-        capacityField.setText("");
-        squareMeterField.setText("");
-        stockField.setText("");
-        tvCheckBox.setSelected(false);
-        minibarCheckBox.setSelected(false);
-        projectionCheckBox.setSelected(false);
-        gameConsoleCheckBox.setSelected(false);
-        cashBoxCheckBox.setSelected(false);
-        roomTypeComboBox.setSelectedIndex(0);
 
+    private void setPensionTypeCheckboxes(int hotelId) {
+        List<Integer> pensionTypeIds = hotelManager.getPensionTypeIdsForHotel(hotelId);
+        for (JCheckBox checkBox : pensionTypeCheckboxes) {
+            Integer pensionTypeId = Integer.parseInt(checkBox.getActionCommand());
+            checkBox.setSelected(pensionTypeIds.contains(pensionTypeId));
+        }
     }
+
+    private void setSeasonCheckboxes(int hotelId) {
+        List<Integer> seasonIds = hotelManager.getSeasonIdsForHotel(hotelId);
+        for (JCheckBox checkBox : seasonCheckboxes) {
+            Integer seasonId = Integer.parseInt(checkBox.getActionCommand());
+            checkBox.setSelected(seasonIds.contains(seasonId));
+        }
+    }
+
+    private void loadPensionTypes() {
+        List<PensionType> pensionTypes = pensionTypeDao.getAllPensionTypes();
+        pensionTypeCheckboxes.clear();
+
+        if (pensionTypesPanel != null) {
+            mainPanel.remove(pensionTypesPanel);
+        }
+
+        pensionTypesPanel = new JPanel(new FlowLayout());
+        pensionTypesPanel.add(new JLabel("Pension Types"));
+        JPanel checkboxPanel = new JPanel(new FlowLayout());
+        for (PensionType type : pensionTypes) {
+            JCheckBox checkBox = new JCheckBox(type.getName());
+            checkBox.setActionCommand(String.valueOf(type.getId()));
+            pensionTypeCheckboxes.add(checkBox);
+            checkboxPanel.add(checkBox);
+        }
+        pensionTypesPanel.add(checkboxPanel);
+        mainPanel.add(pensionTypesPanel);
+        mainPanel.revalidate();
+        mainPanel.repaint();
+    }
+
+
+    private void saveHotel() {
+        Hotel hotel = new Hotel();
+        hotel.setId(selectedHotelId);
+        hotel.setName(fldHotelName.getText());
+        hotel.setCity(fldHotelCity.getText());
+        hotel.setRegion(fldHotelRegion.getText());
+        hotel.setAddress(fldHotelAddress.getText());
+        hotel.setEmail(fldHotelEmail.getText());
+        hotel.setPhone(fldHotelPhone.getText());
+        hotel.setStarRating((String) comboStarRating.getSelectedItem());
+        hotel.setCarPark(chkCarPark.isSelected());
+        hotel.setWifi(chkWifi.isSelected());
+        hotel.setPool(chkPool.isSelected());
+        hotel.setFitness(chkFitness.isSelected());
+        hotel.setConcierge(chkConcierge.isSelected());
+        hotel.setSpa(chkSpa.isSelected());
+        hotel.setRoomService(chkRoomService.isSelected());
+
+        List<Integer> selectedSeasonIds = getSelectedSeasonIds();
+        List<Integer> selectedPensionTypeIds = getSelectedPensionTypeIds();
+
+        if (hotelManager.saveOrUpdate(hotel, selectedSeasonIds, selectedPensionTypeIds)) {
+            JOptionPane.showMessageDialog(this, "Hotel saved or updated successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(this, "Failed to save or update the hotel.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+
+        updateTable();
+    }
+
+
+    private void updateTable() {
+        DefaultTableModel model = (DefaultTableModel) tblHotels.getModel();
+        model.setRowCount(0);
+        List<Hotel> hotels = hotelManager.findAll();
+        for (Hotel hotel : hotels) {
+            model.addRow(new Object[]{
+                    hotel.getId(),
+                    hotel.getName(),
+                    hotel.getCity(),
+                    hotel.getRegion(),
+                    hotel.getAddress(),
+                    hotel.getEmail(),
+                    hotel.getPhone(),
+                    hotel.getStarRating(),
+                    hotel.getCarPark(),
+                    hotel.getWifi(),
+                    hotel.getPool(),
+                    hotel.getFitness(),
+                    hotel.getConcierge(),
+                    hotel.getSpa(),
+                    hotel.getRoomService()
+            });
+        }
+    }
+    private void loadSeasons() {
+        allSeasons = new SeasonManager().getAllSeasons();
+        seasonCheckboxes.clear();
+
+        if (seasonPanel != null) {
+            mainPanel.remove(seasonPanel);
+        }
+
+        seasonPanel = new JPanel(new FlowLayout());
+        seasonPanel.add(new JLabel("Seasons"));
+        for (Season season : allSeasons) {
+            JCheckBox checkBox = new JCheckBox(season.getName());
+            checkBox.setActionCommand(String.valueOf(season.getId()));
+            seasonCheckboxes.add(checkBox);
+            seasonPanel.add(checkBox);
+        }
+        mainPanel.add(seasonPanel);
+        mainPanel.revalidate();
+        mainPanel.repaint();
+    }
+
 
 
     public static void main(String[] args) {
-        new HotelView();
+        SwingUtilities.invokeLater(() -> {
+            new HotelView();
+        });
     }
+    private List<Integer> getSelectedSeasonIds() {
+        List<Integer> selectedSeasonIds = new ArrayList<>();
+        for (JCheckBox checkBox : seasonCheckboxes) {
+            if (checkBox.isSelected()) {
+                int seasonIndex = seasonCheckboxes.indexOf(checkBox);
+                int seasonId = allSeasons.get(seasonIndex).getId();
+                selectedSeasonIds.add(seasonId);
+            }
+        }
+        return selectedSeasonIds;
+    }
+
+    private List<Integer> getSelectedPensionTypeIds() {
+        List<Integer> selectedPensionTypeIds = new ArrayList<>();
+        List<PensionType> allPensionTypes = pensionTypeDao.getAllPensionTypes();
+        for (JCheckBox checkBox : pensionTypeCheckboxes) {
+            if (checkBox.isSelected()) {
+                int pensionTypeIndex = pensionTypeCheckboxes.indexOf(checkBox);
+                int pensionTypeId = allPensionTypes.get(pensionTypeIndex).getId();
+                selectedPensionTypeIds.add(pensionTypeId);
+            }
+        }
+        return selectedPensionTypeIds;
+    }
+    private void deleteHotel() {
+        int selectedRow = tblHotels.getSelectedRow();
+        if (selectedRow != -1) {
+            int hotelId = (int) tblHotels.getValueAt(selectedRow, 0);
+            int choice = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete this hotel?", "Confirm Delete", JOptionPane.YES_NO_OPTION);
+            if (choice == JOptionPane.YES_OPTION) {
+                if (hotelManager.delete(hotelId)) {
+                    JOptionPane.showMessageDialog(this, "Hotel deleted successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
+                    updateTable();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Failed to delete the hotel.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Please select a hotel to delete.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    private void clearForm() {
+        fldHotelName.setText("");
+        fldHotelEmail.setText("");
+        fldHotelPhone.setText("");
+        fldHotelAddress.setText("");
+        fldHotelCity.setText("");
+        fldHotelRegion.setText("");
+        comboStarRating.setSelectedIndex(0);  // Reset to default or first item
+
+        chkCarPark.setSelected(false);
+        chkWifi.setSelected(false);
+        chkPool.setSelected(false);
+        chkFitness.setSelected(false);
+        chkConcierge.setSelected(false);
+        chkSpa.setSelected(false);
+        chkRoomService.setSelected(false);
+
+        for (JCheckBox checkBox : pensionTypeCheckboxes) {
+            checkBox.setSelected(false);
+        }
+
+        for (JCheckBox checkBox : seasonCheckboxes) {
+            checkBox.setSelected(false);
+        }
+
+        btnSave.setText("SAVE");
+        selectedHotelId = -1;  // Reset selected hotel ID
+    }
+
+
 }

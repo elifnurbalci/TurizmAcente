@@ -24,9 +24,7 @@ public class EmployeeView extends JFrame{
         this.container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
 
         this.btn_hotel_management.setAlignmentX(Component.CENTER_ALIGNMENT);
-        this.btn_hotel_management.setFont(new Font("Arial", Font.PLAIN, 16));
         this.btn_reservation_management.setAlignmentX(Component.CENTER_ALIGNMENT);
-        this.btn_reservation_management.setFont(new Font("Arial", Font.PLAIN, 16));
 
         setTitle("Agent Management System");
         this.container.add(Box.createVerticalStrut(40));
@@ -44,10 +42,17 @@ public class EmployeeView extends JFrame{
     }
     private void initListeners() {
         btn_hotel_management.addActionListener(e -> {
-            //hotel view ekrani acilacak
+            EventQueue.invokeLater(() -> {
+                HotelView hotelView = new HotelView();
+                hotelView.setVisible(true);
+            });
         });
         btn_reservation_management.addActionListener(e -> {
-            //rezervasyon view ekrani acilacak
+//            this.dispose();
+//            EventQueue.invokeLater(() -> {
+//                ReservationView reservationView = new ReservationView();
+//                reservationView.setVisible(true);
+//            });
         });
     }
 }

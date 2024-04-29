@@ -5,6 +5,7 @@ import entities.Hotel;
 import dataAccess.Helper;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class HotelManager {
     private final HotelDao hotelDao = new HotelDao();
@@ -42,21 +43,30 @@ public class HotelManager {
         return hotelRowList;
     }
 
-    public boolean save(Hotel hotel) {
-        if (this.hotelDao.getByHotelId(hotel.getId()) != null) {
-            Helper.showMessage("error");
+    public boolean save(Hotel hotel, List<Integer> seasonId, List<Integer> pensionTypeId) {
+        if (hotel.getName() == null || hotel.getName().trim().isEmpty()) {
+            Helper.showMessage("Error: Hotel name cannot be empty.");
             return false;
         }
-        return this.hotelDao.save(hotel);
+        if (this.hotelDao.getByHotelId(hotel.getId()) != null) {
+            Helper.showMessage("Error: Hotel already exists.");
+            return false;
+        }
+        return this.hotelDao.save(hotel, seasonId, pensionTypeId);
     }
 
-    public boolean update(Hotel hotel) {
-        if (this.hotelDao.getByHotelId(hotel.getId()) == null) {
-            Helper.showMessage(hotel.getId() + " not found");
+    public boolean update(Hotel hotel, List<Integer> seasonId, List<Integer> pensionTypeId) {
+        if (hotel.getName() == null || hotel.getName().trim().isEmpty()) {
+            Helper.showMessage("Error: Hotel name cannot be empty.");
             return false;
         }
-        return this.hotelDao.update(hotel);
+        if (this.hotelDao.getByHotelId(hotel.getId()) == null) {
+            Helper.showMessage("Hotel with ID " + hotel.getId() + " not found");
+            return false;
+        }
+        return this.hotelDao.update(hotel, seasonId, pensionTypeId);
     }
+
 
     public boolean delete(int id) {
         if (this.hotelDao.getByHotelId(id) == null) {
@@ -65,4 +75,27 @@ public class HotelManager {
         }
         return this.hotelDao.delete(id);
     }
+
+    public boolean saveOrUpdate(Hotel hotel, List<Integer> seasonIds, List<Integer> pensionTypeIds) {
+        if (hotel.getName() == null || hotel.getName().trim().isEmpty()) {
+            Helper.showMessage("Error: Hotel name cannot be empty.");
+            return false;
+        }
+
+        if (hotel.getId() > 0) {
+            return update(hotel, seasonIds, pensionTypeIds);
+        } else {
+            return save(hotel, seasonIds, pensionTypeIds);
+        }
+    }
+
+
+    public List<Integer> getPensionTypeIdsForHotel(int hotelId) {
+        return hotelDao.getPensionTypeIdsForHotel(hotelId);
+    }
+
+    public List<Integer> getSeasonIdsForHotel(int hotelId) {
+        return hotelDao.getSeasonIdsForHotel(hotelId);
+    }
+
 }

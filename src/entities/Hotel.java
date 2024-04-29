@@ -1,5 +1,7 @@
 package entities;
 
+import java.util.List;
+
 public class Hotel {
     private int id;
     private String name;
@@ -16,12 +18,14 @@ public class Hotel {
     private Boolean concierge;
     private Boolean spa;
     private Boolean roomService;
+    private List<Season> seasons;
+    private List<PensionType> pensionTypes;
 
     // Constructors
     public Hotel() {}
 
     public Hotel(int id, String name, String city, String region, String address, String email, String phone, String starRating,
-                 Boolean carPark, Boolean wifi, Boolean pool, Boolean fitness, Boolean concierge, Boolean spa, Boolean roomService) {
+                 Boolean carPark, Boolean wifi, Boolean pool, Boolean fitness, Boolean concierge, Boolean spa, Boolean roomService, List<Integer> seasonIds, List<Integer> pensionTypeIds) {
         this.id = id;
         this.name = name;
         this.city = city;
@@ -37,6 +41,13 @@ public class Hotel {
         this.concierge = concierge;
         this.spa = spa;
         this.roomService = roomService;
+        this.seasons = findSeasonsByIds(seasonIds);
+        this.pensionTypes = findPensionsByIds(pensionTypeIds);
+    }
+    public Hotel(int id, List<Integer> seasonIds, List<Integer> pensionTypeIds) {
+        this.id = id;
+        this.seasons = findSeasonsByIds(seasonIds);
+        this.pensionTypes = findPensionsByIds(pensionTypeIds);
     }
 
     // Getters and setters
@@ -70,4 +81,25 @@ public class Hotel {
     public void setSpa(Boolean spa) { this.spa = spa; }
     public Boolean getRoomService() { return roomService; }
     public void setRoomService(Boolean roomService) { this.roomService = roomService; }
+
+//    public List<Season> getSeasons() {
+//        return seasons;
+//    }
+//    public void setSeasons(List<Season> seasons) {
+//        this.seasons = seasons;
+//    }
+//    public List<PensionType> getPensionTypes() {
+//        return pensionTypes;
+//    }
+//    public void setPensionTypes(List<PensionType> pensionTypes) {
+//        this.pensionTypes = pensionTypes;
+//    }
+
+    private List<Season> findSeasonsByIds(List<Integer> seasonIds) {
+        return null;
+    }
+    private List<PensionType> findPensionsByIds(List<Integer> pensionTypeIds) {
+        return null;
+    }
+
 }

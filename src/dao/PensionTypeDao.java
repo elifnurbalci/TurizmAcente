@@ -1,7 +1,10 @@
 package dao;
 
 import entities.PensionType;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import dataAccess.DatabaseConnection;
 
@@ -12,11 +15,11 @@ public class PensionTypeDao {
         connection = DatabaseConnection.getInstance();
     }
 
-    public ArrayList<PensionType> findAll() {
+    public ArrayList<PensionType> getAllPensionTypes() {
         ArrayList<PensionType> pensionTypes = new ArrayList<>();
-        String sql = "SELECT * FROM pension_type";
-        try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+        String sql = "SELECT * FROM public.pension_type";
+        try (PreparedStatement stmt = connection.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 PensionType pensionType = new PensionType();
                 pensionType.setId(rs.getInt("pension_type_id"));
@@ -24,7 +27,7 @@ public class PensionTypeDao {
                 pensionTypes.add(pensionType);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("Error retrieving all pension types: " + e.getMessage());
         }
         return pensionTypes;
     }

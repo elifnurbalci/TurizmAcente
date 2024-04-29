@@ -15,7 +15,7 @@ public class SeasonDao {
 
     public ArrayList<Season> findAll() {
         ArrayList<Season> seasons = new ArrayList<>();
-        String sql = "SELECT * FROM season";
+        String sql = "SELECT * FROM public.season";
         try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {

@@ -38,6 +38,8 @@ public class AddUserView extends JFrame{
         setVisible(true);
     }
 
+
+
     private void initializeComponents() {
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
 
