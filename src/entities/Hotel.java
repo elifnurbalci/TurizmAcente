@@ -82,24 +82,16 @@ public class Hotel {
     public Boolean getRoomService() { return roomService; }
     public void setRoomService(Boolean roomService) { this.roomService = roomService; }
 
-//    public List<Season> getSeasons() {
-//        return seasons;
-//    }
-//    public void setSeasons(List<Season> seasons) {
-//        this.seasons = seasons;
-//    }
-//    public List<PensionType> getPensionTypes() {
-//        return pensionTypes;
-//    }
-//    public void setPensionTypes(List<PensionType> pensionTypes) {
-//        this.pensionTypes = pensionTypes;
-//    }
 
     private List<Season> findSeasonsByIds(List<Integer> seasonIds) {
         return null;
     }
     private List<PensionType> findPensionsByIds(List<Integer> pensionTypeIds) {
         return null;
+    }
+    @Override
+    public String toString() {
+        return name;
     }
 
 }

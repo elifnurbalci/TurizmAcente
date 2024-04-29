@@ -3,8 +3,6 @@ package entities;
 public class Room {
     private int id;
     private int hotelId;
-    private int pensionId;
-    private int seasonId;
     private String type;
     private int stock;
     private double priceAdult;
@@ -16,16 +14,14 @@ public class Room {
     private boolean gameConsole;
     private boolean cashBox;
     private boolean projection;
+    private Hotel hotel;
 
     // Constructor
     public Room() {
     }
 
-    public Room(int id, int hotelId, int pensionId, int seasonId, String type, int stock, double priceAdult, double priceChild, int capacity, int squareMeter, boolean television, boolean minibar, boolean gameConsole, boolean cashBox, boolean projection) {
+    public Room(int id, String type, int stock, double priceAdult, double priceChild, int capacity, int squareMeter, boolean television, boolean minibar, boolean gameConsole, boolean cashBox, boolean projection) {
         this.id = id;
-        this.hotelId = hotelId;
-        this.pensionId = pensionId;
-        this.seasonId = seasonId;
         this.type = type;
         this.stock = stock;
         this.priceAdult = priceAdult;
@@ -54,22 +50,6 @@ public class Room {
 
     public void setHotelId(int hotelId) {
         this.hotelId = hotelId;
-    }
-
-    public int getPensionId() {
-        return pensionId;
-    }
-
-    public void setPensionId(int pensionId) {
-        this.pensionId = pensionId;
-    }
-
-    public int getSeasonId() {
-        return seasonId;
-    }
-
-    public void setSeasonId(int seasonId) {
-        this.seasonId = seasonId;
     }
 
     public String getType() {
@@ -158,5 +138,13 @@ public class Room {
 
     public void setProjection(boolean projection) {
         this.projection = projection;
+    }
+
+    public Hotel getHotel() {
+        return hotel;
+    }
+
+    public void setHotel(Hotel hotel) {
+        this.hotel = hotel;
     }
 }

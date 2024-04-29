@@ -80,6 +80,7 @@ public class HotelView extends JFrame {
     private void setupLayout() {
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
+        setTitle("Hotel Management System");
         JPanel formPanel = new JPanel(new GridLayout(0, 2, 10, 10));
         formPanel.add(new JLabel("Hotel Name:"));
         formPanel.add(fldHotelName);

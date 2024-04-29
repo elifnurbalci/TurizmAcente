@@ -1,6 +1,7 @@
 package dao;
 
 import dataAccess.DatabaseConnection;
+import entities.Hotel;
 import entities.Room;
 
 import java.sql.Connection;
@@ -8,6 +9,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 public class RoomDao {
     private Connection connection;
@@ -15,145 +18,203 @@ public class RoomDao {
     public RoomDao() {
         this.connection = DatabaseConnection.getInstance();
     }
-    public Room getByRoomId(int id) {
-        Room roomObj = null;
-        String sql = "SELECT * FROM public.room WHERE room_id = ?";
+
+    public boolean save(Room room) {
+        String roomSql = "INSERT INTO public.room (room_type, room_stock, room_price_adult, room_price_child, room_capacity, room_square_meter, television, minibar, game_console, cash_box, projection) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String joinSql = "INSERT INTO public.room_hotel (room_id, hotel_id) VALUES (?, ?)";
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setInt(1, id);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            if (resultSet.next()) roomObj = this.match(resultSet);
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-        return roomObj;
-    }
-    public ArrayList<Room> findAll() {
-        ArrayList<Room> rooms = new ArrayList<>();
-        String sql = "SELECT * FROM public.room ORDER BY room_id ASC";
-        try {
-            ResultSet resultSet = this.connection.createStatement().executeQuery(sql);
-            while (resultSet.next()) {
-                rooms.add(this.match(resultSet));
+            connection.setAutoCommit(false);
+            PreparedStatement roomStmt = connection.prepareStatement(roomSql, PreparedStatement.RETURN_GENERATED_KEYS);
+            roomStmt.setString(1, room.getType());
+            roomStmt.setInt(2, room.getStock());
+            roomStmt.setDouble(3, room.getPriceAdult());
+            roomStmt.setDouble(4, room.getPriceChild());
+            roomStmt.setInt(5, room.getCapacity());
+            roomStmt.setInt(6, room.getSquareMeter());
+            roomStmt.setBoolean(7, room.isTelevision());
+            roomStmt.setBoolean(8, room.isMinibar());
+            roomStmt.setBoolean(9, room.isGameConsole());
+            roomStmt.setBoolean(10, room.isCashBox());
+            roomStmt.setBoolean(11, room.isProjection());
+            int affectedRows = roomStmt.executeUpdate();
+            if (affectedRows == 0) {
+                throw new SQLException("Creating room failed, no rows affected.");
             }
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            ResultSet generatedKeys = roomStmt.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                int newRoomId = generatedKeys.getInt(1);
+                PreparedStatement joinStmt = connection.prepareStatement(joinSql);
+                joinStmt.setInt(1, newRoomId);
+                joinStmt.setInt(2, room.getHotelId());
+                joinStmt.executeUpdate();
+                joinStmt.close();
+            } else {
+                throw new SQLException("Creating room failed, no ID obtained.");
+            }
+            roomStmt.close();
+            connection.commit();
+            return true;
+        } catch (SQLException ex) {
+            try {
+                if (connection != null) connection.rollback();
+            } catch (SQLException e) {
+                System.out.println("Rollback failed: " + e.getMessage());
+            }
+            System.out.println("Error: " + ex.getMessage());
+            return false;
+        } finally {
+            try {
+                if (connection != null) connection.setAutoCommit(true);
+            } catch (SQLException e) {
+                System.out.println("Failed to reset auto-commit: " + e.getMessage());
+            }
+        }
+    }
+
+
+    public boolean update(Room room, Set<String> updatedFields) {
+        StringBuilder sqlBuilder = new StringBuilder("UPDATE public.room SET ");
+        List<Object> values = new ArrayList<>();
+
+        if (updatedFields.contains("stock")) {
+            sqlBuilder.append("room_stock = ?, ");
+            values.add(room.getStock());
+        }
+        if (updatedFields.contains("adultPrice")) {
+            sqlBuilder.append("room_price_adult = ?, ");
+            values.add(room.getPriceAdult());
+        }
+        if (updatedFields.contains("childPrice")) {
+            sqlBuilder.append("room_price_child = ?, ");
+            values.add(room.getPriceChild());
+        }
+        if (updatedFields.contains("capacity")) {
+            sqlBuilder.append("room_capacity = ?, ");
+            values.add(room.getCapacity());
+        }
+        if (updatedFields.contains("squareMeter")) {
+            sqlBuilder.append("room_square_meter = ?, ");
+            values.add(room.getSquareMeter());
+        }
+        if (updatedFields.contains("television")) {
+            sqlBuilder.append("television = ?, ");
+            values.add(room.isTelevision());
+        }
+        if (updatedFields.contains("minibar")) {
+            sqlBuilder.append("minibar = ?, ");
+            values.add(room.isMinibar());
+        }
+        if (updatedFields.contains("gameConsole")) {
+            sqlBuilder.append("game_console = ?, ");
+            values.add(room.isGameConsole());
+        }
+        if (updatedFields.contains("cashBox")) {
+            sqlBuilder.append("cash_box = ?, ");
+            values.add(room.isCashBox());
+        }
+        if (updatedFields.contains("projection")) {
+            sqlBuilder.append("projection = ?, ");
+            values.add(room.isProjection());
+        }
+
+        sqlBuilder.delete(sqlBuilder.length() - 2, sqlBuilder.length());
+
+        sqlBuilder.append(" WHERE room_id = ?");
+        values.add(room.getId());
+
+        String sql = sqlBuilder.toString();
+        try (Connection connection = DatabaseConnection.getInstance();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            int i = 1;
+            for (Object value : values) {
+                preparedStatement.setObject(i++, value);
+            }
+
+            int affectedRows = preparedStatement.executeUpdate();
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            System.out.println("Update failed: " + e.getMessage());
+            return false;
+        }
+    }
+
+
+
+    public boolean delete(int roomId) {
+        String deleteRoomHotelSql = "DELETE FROM public.room_hotel WHERE room_id = ?";
+        String deleteRoomSql = "DELETE FROM public.room WHERE room_id = ?";
+        try {
+            connection.setAutoCommit(false);
+
+            PreparedStatement deleteRoomHotelStmt = connection.prepareStatement(deleteRoomHotelSql);
+            deleteRoomHotelStmt.setInt(1, roomId);
+            deleteRoomHotelStmt.executeUpdate();
+            deleteRoomHotelStmt.close();
+
+            PreparedStatement deleteRoomStmt = connection.prepareStatement(deleteRoomSql);
+            deleteRoomStmt.setInt(1, roomId);
+            int affectedRows = deleteRoomStmt.executeUpdate();
+
+            connection.commit();
+
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            try {
+                if (connection != null) connection.rollback();
+            } catch (SQLException ex) {
+                System.out.println("Rollback failed: " + ex.getMessage());
+            }
+            System.out.println("Delete failed: " + e.getMessage());
+            return false;
+        } finally {
+            try {
+                if (connection != null) connection.setAutoCommit(true);
+            } catch (SQLException ex) {
+                System.out.println("Failed to reset auto-commit: " + ex.getMessage());
+            }
+        }
+    }
+
+
+    public List<Room> getRoomsByHotelAndType(int hotelId, String roomType) {
+        List<Room> rooms = new ArrayList<>();
+        String sql = "SELECT r.*, rh.hotel_id FROM public.room r " +
+                "JOIN public.room_hotel rh ON r.room_id = rh.room_id " +
+                "WHERE rh.hotel_id = ? AND r.room_type = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, hotelId);
+            preparedStatement.setString(2, roomType);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                rooms.add(extractRoomFromResultSet(resultSet));
+            }
+        } catch (SQLException e) {
+            System.out.println("Error retrieving rooms by hotel and type: " + e.getMessage());
         }
         return rooms;
     }
-    public boolean save(Room room) {
-        String sql = "INSERT INTO public.room " +
-                "(hotel_id, season_id, pension_id, room_type, room_stock, room_price_adult, room_price_child, room_capacity, room_square_meter, television, minibar, game_console, cash_box, projection) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        try {
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setInt(1, room.getHotelId());
-            preparedStatement.setInt(2, room.getSeasonId());
-            preparedStatement.setInt(3, room.getPensionId());
-            preparedStatement.setString(4, room.getType());
-            preparedStatement.setInt(5, room.getStock());
-            preparedStatement.setDouble(6, room.getPriceAdult());
-            preparedStatement.setDouble(7, room.getPriceChild());
-            preparedStatement.setInt(8, room.getCapacity());
-            preparedStatement.setInt(9, room.getSquareMeter());
-            preparedStatement.setBoolean(10, room.isTelevision());
-            preparedStatement.setBoolean(11, room.isMinibar());
-            preparedStatement.setBoolean(12, room.isGameConsole());
-            preparedStatement.setBoolean(13, room.isCashBox());
-            preparedStatement.setBoolean(14, room.isProjection());
-            return preparedStatement.executeUpdate() != -1;
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-        return false;
-    }
 
 
 
-    public Room getByDetails(int hotelId, int seasonId, int pensionId, String type) {
-        Room room = null;
-        String sql = "SELECT * FROM public.room WHERE hotel_id = ? AND season_id = ? AND pension_id = ? AND room_type = ?";
-        try {
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setInt(1, hotelId);
-            preparedStatement.setInt(2, seasonId);
-            preparedStatement.setInt(3, pensionId);
-            preparedStatement.setString(4, type);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            if (resultSet.next()) {
-                room = match(resultSet);
-            }
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-        return room;
-    }
-
-    public boolean update(Room room) {
-        String sql = "UPDATE public.room SET " +
-                "room_type = ? , " +
-                "room_stock = ? , " +
-                "room_price_adult = ? , " +
-                "room_price_child = ? , " +
-                "room_capacity = ? , " +
-                "room_square_meter = ? , " +
-                "television = ? , " +
-                "minibar = ? , " +
-                "game_console = ? , " +
-                "cash_box = ? , " +
-                "projection = ? , " +
-                "WHERE room_id = ?";
-
-        try {
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setInt(1,room.getId());
-            preparedStatement.setString(2, room.getType());
-            preparedStatement.setInt(3, room.getStock());
-            preparedStatement.setInt(4,room.getCapacity());
-            preparedStatement.setDouble(5,room.getSquareMeter());
-            preparedStatement.setBoolean(6,room.isTelevision());
-            preparedStatement.setBoolean(7,room.isMinibar());
-            preparedStatement.setBoolean(8,room.isGameConsole());
-            preparedStatement.setBoolean(9,room.isCashBox());
-            preparedStatement.setBoolean(10,room.isProjection());
-            preparedStatement.setInt(11,room.getId());
-
-
-            return preparedStatement.executeUpdate() != -1;
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-        return true;
-    }
-    public boolean delete(int id) {
-        String sql = "DELETE FROM public.room WHERE room_id = ?";
-        try {
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setInt(1, id);
-            return preparedStatement.executeUpdate() != -1;
-
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-        return true;
-    }
-
-    private Room match(ResultSet resultSet) throws SQLException {
+    private Room extractRoomFromResultSet(ResultSet rs) throws SQLException {
         Room room = new Room();
-        room.setId(resultSet.getInt("room_id"));
-        room.setType(resultSet.getString("room_type"));
-        room.setStock(resultSet.getInt("room_stock"));
-        room.setCapacity(resultSet.getInt("room_capacity"));
-        room.setSquareMeter(resultSet.getInt("room_square_meter"));
-        room.setTelevision(resultSet.getBoolean("television"));
-        room.setMinibar(resultSet.getBoolean("minibar"));
-        room.setGameConsole(resultSet.getBoolean("game_console"));
-        room.setCashBox(resultSet.getBoolean("cash_box"));
-        room.setProjection(resultSet.getBoolean("projection"));
+        room.setId(rs.getInt("room_id"));
+        Hotel hotel = new Hotel(); // Hotel nesnesi oluşturuluyor
+        hotel.setId(rs.getInt("hotel_id"));
+        room.setHotel(hotel); // Oluşturulan Hotel nesnesi Room'a set ediliyor
+        room.setType(rs.getString("room_type"));
+        room.setStock(rs.getInt("room_stock"));
+        room.setPriceAdult(rs.getDouble("room_price_adult"));
+        room.setPriceChild(rs.getDouble("room_price_child"));
+        room.setCapacity(rs.getInt("room_capacity"));
+        room.setSquareMeter(rs.getInt("room_square_meter"));
+        room.setTelevision(rs.getBoolean("television"));
+        room.setMinibar(rs.getBoolean("minibar"));
+        room.setGameConsole(rs.getBoolean("game_console"));
+        room.setCashBox(rs.getBoolean("cash_box"));
+        room.setProjection(rs.getBoolean("projection"));
         return room;
     }
 
 }
-
-
-

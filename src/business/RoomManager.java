@@ -2,7 +2,8 @@ package business;
 
 import dao.RoomDao;
 import entities.Room;
-import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 public class RoomManager {
     private RoomDao roomDao;
@@ -11,36 +12,22 @@ public class RoomManager {
         this.roomDao = new RoomDao();
     }
 
-    public Room getByRoomId(int id) {
-        return roomDao.getByRoomId(id);
-    }
-
-    public ArrayList<Room> findAll() {
-        return roomDao.findAll();
-    }
-
     public boolean save(Room room) {
-        Room existingRoom = roomDao.getByDetails(room.getHotelId(), room.getSeasonId(), room.getPensionId(), room.getType());
-
-        if (existingRoom != null) {
-            int newCapacity = existingRoom.getCapacity() + room.getCapacity();
-            existingRoom.setCapacity(newCapacity);
-            existingRoom.setStock(existingRoom.getStock() + room.getStock());
-            return roomDao.update(existingRoom);
-        } else {
-            room.setStock(room.getStock());
-            return roomDao.save(room);
-        }
+        return roomDao.save(room);
     }
 
 
-
-    public boolean update(Room room) {
-        return roomDao.update(room);
+    public boolean update(Room room, Set<String> updatedFields) {
+        return roomDao.update(room, updatedFields);
     }
 
-    public boolean delete(int id) {
-        return roomDao.delete(id);
+
+    public boolean delete(int roomId) {
+        return roomDao.delete(roomId);
     }
 
+    public List<Room> getRoomsByHotelAndType(int hotelId, String roomType) {
+        return roomDao.getRoomsByHotelAndType(hotelId, roomType);
+    }
 }
+
