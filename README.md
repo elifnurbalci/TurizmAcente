@@ -1,15 +1,22 @@
+Short video link: 
+https://drive.google.com/file/d/1gN5PCjet8e_gWA8_ksn5LneZTsN9o2FB/view?usp=sharing
+
+
 To do list:
 - make reservation
-- add user - update user - delete user
+- list reservation - edit reservation - delete reservation
+- ux/ui improvements
 
 Completed list:
 - employee/admin login
 - add hotel - edit hotel - delete hotel
 - hotel list
-- add room
+- add room - list room - update room - delete room
+- add room price
 - db connection
 - all UI 
 - error / success messages
+- add user - update user - delete user - list user
 
 
 
