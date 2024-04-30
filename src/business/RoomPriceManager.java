@@ -10,6 +10,10 @@ public class RoomPriceManager {
         this.roomPriceDao = new RoomPriceDao();
     }
 
+    public RoomPriceManager(RoomPriceDao roomPriceDao) {
+        this.roomPriceDao = roomPriceDao;
+    }
+
     public boolean save(RoomPrice roomPrice) {
         return roomPriceDao.save(roomPrice);
     }

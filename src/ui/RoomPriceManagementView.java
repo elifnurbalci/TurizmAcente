@@ -1,6 +1,7 @@
 package ui;
 
 import business.*;
+import dao.*;
 import entities.*;
 
 import javax.swing.*;
@@ -23,6 +24,11 @@ public class RoomPriceManagementView extends JFrame {
     private SeasonManager seasonManager;
     private PensionTypeManager pensionTypeManager;
     private List<Hotel> hotels;
+    private HotelDao hotelDao;
+    private RoomDao roomDao;
+    private SeasonDao seasonDao;
+    private PensionTypeDao pensionTypeDao;
+    private RoomPriceDao roomPriceDao;
 
     public RoomPriceManagementView() {
         super("Room Price Management");
@@ -31,18 +37,28 @@ public class RoomPriceManagementView extends JFrame {
         setLocationRelativeTo(null);
 
         container = new JPanel(new GridLayout(0, 2));
-        hotelManager = new HotelManager();
-        roomManager = new RoomManager();
-        roomPriceManager = new RoomPriceManager();
-        seasonManager = new SeasonManager();
-        pensionTypeManager = new PensionTypeManager();
+
+        hotelDao = new HotelDao();
+        roomDao = new RoomDao();
+        seasonDao = new SeasonDao();
+        pensionTypeDao = new PensionTypeDao();
+        roomPriceDao = new RoomPriceDao();
+
+        hotelManager = new HotelManager(hotelDao);
+        roomManager = new RoomManager(roomDao);
+        roomPriceManager = new RoomPriceManager(roomPriceDao);
+        seasonManager = new SeasonManager(seasonDao);
+        pensionTypeManager = new PensionTypeManager(pensionTypeDao);
+
         addComponents();
         loadData();
         initListeners();
+
         getContentPane().add(container);
         setVisible(true);
-
     }
+
+
 
     private void addComponents() {
         cbHotel = new JComboBox<>();
@@ -89,7 +105,29 @@ public class RoomPriceManagementView extends JFrame {
     }
 
     private void initListeners() {
-        btnSave.addActionListener(e -> saveRoomPrice());
+        btnSave.addActionListener(e -> {
+            String hotelName = cbHotel.getSelectedItem().toString();
+            String roomTypeName = cbRoom.getSelectedItem().toString();
+            String seasonName = cbSeason.getSelectedItem().toString();
+            String pensionTypeName = cbPension.getSelectedItem().toString();
+            double adultPrice = 0.0;
+            double childPrice = 0.0;
+
+            try {
+                adultPrice = Double.parseDouble(txtAdultPrice.getText());
+                childPrice = Double.parseDouble(txtChildPrice.getText());
+            } catch (NumberFormatException nfe) {
+                JOptionPane.showMessageDialog(null, "Please enter valid numbers for prices.", "Invalid Price Format", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            if (saveRoomPrice(hotelName, roomTypeName, seasonName, pensionTypeName, adultPrice, childPrice)) {
+                JOptionPane.showMessageDialog(null, "Room price saved successfully!");
+            } else {
+                JOptionPane.showMessageDialog(null, "Failed to save room price. Please check the inputs and try again.", "Save Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
         cbHotel.addActionListener(e -> {
             Hotel selectedHotel = getSelectedHotel();
             if (selectedHotel != null) {
@@ -111,47 +149,26 @@ public class RoomPriceManagementView extends JFrame {
         return null;
     }
 
-    private void saveRoomPrice() {
-        String selectedHotel = (String) cbHotel.getSelectedItem();
-        String selectedRoom = (String) cbRoom.getSelectedItem();
-        String selectedSeason = (String) cbSeason.getSelectedItem();
-        String selectedPension = (String) cbPension.getSelectedItem();
-        String adultPriceText = txtAdultPrice.getText();
-        String childPriceText = txtChildPrice.getText();
-
-        if (selectedHotel == null || selectedRoom == null || selectedSeason == null || selectedPension == null || adultPriceText.isEmpty() || childPriceText.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please fill in all fields.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
+    public boolean saveRoomPrice(String hotelName, String roomTypeName, String seasonName, String pensionTypeName, double adultPrice, double childPrice) {
+        if (hotelDao == null || roomDao == null || seasonDao == null || pensionTypeDao == null) {
+            System.out.println("DAOs not initialized");
+            return false;
         }
 
-        double adultPrice, childPrice;
-        try {
-            adultPrice = Double.parseDouble(adultPriceText);
-            childPrice = Double.parseDouble(childPriceText);
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Invalid price format.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
+        int hotelId = hotelDao.findHotelIdByName(hotelName);
+        int roomId = roomDao.findRoomIdByName(roomTypeName);
+        int seasonId = seasonDao.findSeasonIdByName(seasonName);
+        int pensionTypeId = pensionTypeDao.findPensionTypeIdByName(pensionTypeName);
 
-        int roomId = roomManager.findRoomIdByName(selectedRoom);
-        if (roomId == -1) {
-            JOptionPane.showMessageDialog(this, "Selected room is invalid.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
+        if (hotelId == -1 || roomId == -1 || seasonId == -1 || pensionTypeId == -1) {
+            JOptionPane.showMessageDialog(null, "One or more entities not found. Please verify the inputs.");
+            return false;
         }
-
-        int hotelId = hotelManager.findHotelIdByName(selectedHotel);
-        int seasonId = seasonManager.findSeasonIdByName(selectedSeason);
-        int pensionTypeId = pensionTypeManager.findPensionTypeIdByName(selectedPension);
 
         RoomPrice roomPrice = new RoomPrice(roomId, hotelId, seasonId, pensionTypeId, adultPrice, childPrice);
-
-        boolean success = roomPriceManager.save(roomPrice);
-        if (success) {
-            JOptionPane.showMessageDialog(this, "Price saved successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
-        } else {
-            JOptionPane.showMessageDialog(this, "Failed to save price.", "Error", JOptionPane.ERROR_MESSAGE);
-        }
+        return roomPriceDao.save(roomPrice);
     }
+
 
 
 

@@ -12,6 +12,10 @@ public class SeasonManager {
         seasonDao = new SeasonDao();
     }
 
+    public SeasonManager(SeasonDao seasonDao) {
+        this.seasonDao = seasonDao;
+    }
+
     public ArrayList<Season> getAllSeasons() {
         return seasonDao.findAll();
     }

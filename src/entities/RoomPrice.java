@@ -23,16 +23,8 @@ public class RoomPrice {
         return roomId;
     }
 
-    public void setRoomId(int roomId) {
-        this.roomId = roomId;
-    }
-
     public int getHotelId() {
         return hotelId;
-    }
-
-    public void setHotelId(int hotelId) {
-        this.hotelId = hotelId;
     }
 
     public int getSeasonId() {
@@ -47,9 +39,6 @@ public class RoomPrice {
         return pensionTypeId;
     }
 
-    public void setPensionTypeId(int pensionTypeId) {
-        this.pensionTypeId = pensionTypeId;
-    }
 
     public double getAdultPrice() {
         return adultPrice;

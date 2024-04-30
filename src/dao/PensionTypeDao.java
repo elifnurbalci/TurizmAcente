@@ -53,6 +53,21 @@ public class PensionTypeDao {
         return pensions;
     }
 
+    public int findPensionTypeIdByName(String pensionTypeName) {
+        String sql = "SELECT pension_type_id FROM public.pension_type WHERE pension_type_name = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, pensionTypeName);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("pension_type_id");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error retrieving pension type ID for name: " + pensionTypeName);
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
 
 
 

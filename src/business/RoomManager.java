@@ -12,6 +12,10 @@ public class RoomManager {
         this.roomDao = new RoomDao();
     }
 
+    public RoomManager(RoomDao roomDao) {
+        this.roomDao = roomDao;
+    }
+
     public boolean save(Room room) {
         return roomDao.save(room);
     }

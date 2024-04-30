@@ -233,6 +233,21 @@ public class RoomDao {
         return rooms;
     }
 
+    public int findRoomIdByName(String roomTypeName) {
+        String sql = "SELECT room_id FROM public.room WHERE room_type = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, roomTypeName);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("room_id");
+            } else {
+                return -1;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -1;
+        }
+    }
 
 
 }

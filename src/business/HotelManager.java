@@ -10,6 +10,13 @@ import java.util.List;
 public class HotelManager {
     private final HotelDao hotelDao = new HotelDao();
 
+    public HotelManager(HotelDao hotelDao) {
+    }
+
+    public HotelManager() {
+
+    }
+
     public Hotel getByID(int id) {
         return this.hotelDao.getByHotelId(id);
     }

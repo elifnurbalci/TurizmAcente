@@ -75,5 +75,20 @@ public class SeasonDao {
         }
         return seasons;
     }
+    public int findSeasonIdByName(String seasonName) {
+        String sql = "SELECT season_id FROM public.season WHERE season_name = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, seasonName);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("season_id");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error retrieving season ID for name: " + seasonName);
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
 
 }

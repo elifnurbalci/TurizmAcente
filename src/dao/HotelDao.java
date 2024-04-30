@@ -266,6 +266,20 @@ public class HotelDao {
         return hotel;
     }
 
+    public int findHotelIdByName(String hotelName) {
+        String sql = "SELECT hotel_id FROM public.hotel WHERE hotel_name = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, hotelName);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("hotel_id");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
 
     public List<Integer> getPensionTypeIdsForHotel(int hotelId) {
         List<Integer> pensionTypeIds = new ArrayList<>();
@@ -298,20 +312,7 @@ public class HotelDao {
     }
 
 
-    public int findHotelIdByName(String hotelName) {
-        String sql = "SELECT hotel_id FROM public.hotel WHERE hotel_name = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, hotelName);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt("hotel_id");
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return -1;
-    }
+
 
 
 }

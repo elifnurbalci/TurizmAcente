@@ -12,6 +12,10 @@ public class PensionTypeManager {
         this.pensionTypeDao = new PensionTypeDao();
     }
 
+    public PensionTypeManager(PensionTypeDao pensionTypeDao) {
+        this.pensionTypeDao = pensionTypeDao;
+    }
+
     public void loadPensionTypes(JComboBox<String> comboBox) {
         List<PensionType> pensions = pensionTypeDao.getAllPensionTypes();
         comboBox.removeAllItems();
