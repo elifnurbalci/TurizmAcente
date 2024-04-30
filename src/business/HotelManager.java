@@ -98,4 +98,8 @@ public class HotelManager {
         return hotelDao.getSeasonIdsForHotel(hotelId);
     }
 
+    public int findHotelIdByName(String hotelName) {
+        return hotelDao.findHotelIdByName(hotelName);
+    }
+
 }

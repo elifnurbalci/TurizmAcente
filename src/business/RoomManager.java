@@ -29,5 +29,23 @@ public class RoomManager {
     public List<Room> getRoomsByHotelAndType(int hotelId, String roomType) {
         return roomDao.getRoomsByHotelAndType(hotelId, roomType);
     }
+    public List<Room> getRoomsByHotel(int hotelId) {
+        return roomDao.getRoomsByHotel(hotelId);
+    }
+
+    public int findRoomIdByName(String roomType) {
+        List<Room> rooms = roomDao.getAllRooms();
+        System.out.println("Loaded room types:");
+        for (Room room : rooms) {
+            System.out.println(room.getType());
+            if (room.getType().equalsIgnoreCase(roomType)) {
+                return room.getId();
+            }
+        }
+        System.out.println("No matching room found for type: " + roomType);
+        return -1;
+    }
+
+
 }
 

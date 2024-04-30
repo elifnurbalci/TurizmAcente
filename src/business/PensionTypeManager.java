@@ -1,31 +1,36 @@
 package business;
 
-import dataAccess.DatabaseConnection;
-
+import dao.PensionTypeDao;
+import entities.PensionType;
 import javax.swing.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-
+import java.util.List;
 
 public class PensionTypeManager {
-    private Connection connection;
+    private PensionTypeDao pensionTypeDao;
 
     public PensionTypeManager() {
-        this.connection = DatabaseConnection.getInstance();
+        this.pensionTypeDao = new PensionTypeDao();
     }
 
     public void loadPensionTypes(JComboBox<String> comboBox) {
-        String sql = "SELECT pension_type_name FROM public.pension_type ORDER BY pension_type_id";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            ResultSet resultSet = preparedStatement.executeQuery();
-            comboBox.removeAllItems();
-            while (resultSet.next()) {
-                comboBox.addItem(resultSet.getString("pension_type_name"));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        List<PensionType> pensions = pensionTypeDao.getAllPensionTypes();
+        comboBox.removeAllItems();
+        for (PensionType pension : pensions) {
+            comboBox.addItem(pension.getName());
         }
     }
 
+    public int findPensionTypeIdByName(String pensionTypeName) {
+        List<PensionType> pensions = pensionTypeDao.getAllPensionTypes();
+        for (PensionType pension : pensions) {
+            if (pension.getName().equals(pensionTypeName)) {
+                return pension.getId();
+            }
+        }
+        return -1;
+    }
+
+    public List<PensionType> getPensionsByHotel(int hotelId) {
+        return pensionTypeDao.getPensionsByHotel(hotelId);
+    }
 }

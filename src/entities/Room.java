@@ -5,8 +5,6 @@ public class Room {
     private int hotelId;
     private String type;
     private int stock;
-    private double priceAdult;
-    private double priceChild;
     private int capacity;
     private int squareMeter;
     private boolean television;
@@ -20,12 +18,10 @@ public class Room {
     public Room() {
     }
 
-    public Room(int id, String type, int stock, double priceAdult, double priceChild, int capacity, int squareMeter, boolean television, boolean minibar, boolean gameConsole, boolean cashBox, boolean projection) {
+    public Room(int id, String type, int stock, int capacity, int squareMeter, boolean television, boolean minibar, boolean gameConsole, boolean cashBox, boolean projection) {
         this.id = id;
         this.type = type;
         this.stock = stock;
-        this.priceAdult = priceAdult;
-        this.priceChild = priceChild;
         this.capacity = capacity;
         this.squareMeter = squareMeter;
         this.television = television;
@@ -34,7 +30,6 @@ public class Room {
         this.cashBox = cashBox;
         this.projection = projection;
     }
-    // Getters and setters
 
     public int getId() {
         return id;
@@ -66,22 +61,6 @@ public class Room {
 
     public void setStock(int stock) {
         this.stock = stock;
-    }
-
-    public double getPriceAdult() {
-        return priceAdult;
-    }
-
-    public void setPriceAdult(double priceAdult) {
-        this.priceAdult = priceAdult;
-    }
-
-    public double getPriceChild() {
-        return priceChild;
-    }
-
-    public void setPriceChild(double priceChild) {
-        this.priceChild = priceChild;
     }
 
     public int getCapacity() {
@@ -147,4 +126,9 @@ public class Room {
     public void setHotel(Hotel hotel) {
         this.hotel = hotel;
     }
+    @Override
+    public String toString() {
+        return type;
+    }
+
 }

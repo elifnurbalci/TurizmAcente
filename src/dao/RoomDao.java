@@ -4,10 +4,7 @@ import dataAccess.DatabaseConnection;
 import entities.Hotel;
 import entities.Room;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -20,30 +17,29 @@ public class RoomDao {
     }
 
     public boolean save(Room room) {
-        String roomSql = "INSERT INTO public.room (room_type, room_stock, room_price_adult, room_price_child, room_capacity, room_square_meter, television, minibar, game_console, cash_box, projection) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String roomSql = "INSERT INTO public.room (room_type, room_stock, room_capacity, room_square_meter, television, minibar, game_console, cash_box, projection) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         String joinSql = "INSERT INTO public.room_hotel (room_id, hotel_id) VALUES (?, ?)";
         try {
             connection.setAutoCommit(false);
             PreparedStatement roomStmt = connection.prepareStatement(roomSql, PreparedStatement.RETURN_GENERATED_KEYS);
             roomStmt.setString(1, room.getType());
             roomStmt.setInt(2, room.getStock());
-            roomStmt.setDouble(3, room.getPriceAdult());
-            roomStmt.setDouble(4, room.getPriceChild());
-            roomStmt.setInt(5, room.getCapacity());
-            roomStmt.setInt(6, room.getSquareMeter());
-            roomStmt.setBoolean(7, room.isTelevision());
-            roomStmt.setBoolean(8, room.isMinibar());
-            roomStmt.setBoolean(9, room.isGameConsole());
-            roomStmt.setBoolean(10, room.isCashBox());
-            roomStmt.setBoolean(11, room.isProjection());
+            roomStmt.setInt(3, room.getCapacity());
+            roomStmt.setInt(4, room.getSquareMeter());
+            roomStmt.setBoolean(5, room.isTelevision());
+            roomStmt.setBoolean(6, room.isMinibar());
+            roomStmt.setBoolean(7, room.isGameConsole());
+            roomStmt.setBoolean(8, room.isCashBox());
+            roomStmt.setBoolean(9, room.isProjection());
             int affectedRows = roomStmt.executeUpdate();
             if (affectedRows == 0) {
                 throw new SQLException("Creating room failed, no rows affected.");
             }
             ResultSet generatedKeys = roomStmt.getGeneratedKeys();
+            int newRoomId = -1;
             if (generatedKeys.next()) {
-                int newRoomId = generatedKeys.getInt(1);
+                newRoomId = generatedKeys.getInt(1);
                 PreparedStatement joinStmt = connection.prepareStatement(joinSql);
                 joinStmt.setInt(1, newRoomId);
                 joinStmt.setInt(2, room.getHotelId());
@@ -80,14 +76,6 @@ public class RoomDao {
         if (updatedFields.contains("stock")) {
             sqlBuilder.append("room_stock = ?, ");
             values.add(room.getStock());
-        }
-        if (updatedFields.contains("adultPrice")) {
-            sqlBuilder.append("room_price_adult = ?, ");
-            values.add(room.getPriceAdult());
-        }
-        if (updatedFields.contains("childPrice")) {
-            sqlBuilder.append("room_price_child = ?, ");
-            values.add(room.getPriceChild());
         }
         if (updatedFields.contains("capacity")) {
             sqlBuilder.append("room_capacity = ?, ");
@@ -138,7 +126,6 @@ public class RoomDao {
             return false;
         }
     }
-
 
 
     public boolean delete(int roomId) {
@@ -200,13 +187,11 @@ public class RoomDao {
     private Room extractRoomFromResultSet(ResultSet rs) throws SQLException {
         Room room = new Room();
         room.setId(rs.getInt("room_id"));
-        Hotel hotel = new Hotel(); // Hotel nesnesi oluşturuluyor
+        Hotel hotel = new Hotel();
         hotel.setId(rs.getInt("hotel_id"));
-        room.setHotel(hotel); // Oluşturulan Hotel nesnesi Room'a set ediliyor
+        room.setHotel(hotel);
         room.setType(rs.getString("room_type"));
         room.setStock(rs.getInt("room_stock"));
-        room.setPriceAdult(rs.getDouble("room_price_adult"));
-        room.setPriceChild(rs.getDouble("room_price_child"));
         room.setCapacity(rs.getInt("room_capacity"));
         room.setSquareMeter(rs.getInt("room_square_meter"));
         room.setTelevision(rs.getBoolean("television"));
@@ -216,5 +201,38 @@ public class RoomDao {
         room.setProjection(rs.getBoolean("projection"));
         return room;
     }
+
+    public List<Room> getRoomsByHotel(int hotelId) {
+        List<Room> rooms = new ArrayList<>();
+        String sql = "SELECT r.*, rh.hotel_id FROM public.room r " +
+                "JOIN public.room_hotel rh ON r.room_id = rh.room_id " +
+                "WHERE rh.hotel_id = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, hotelId);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                rooms.add(extractRoomFromResultSet(resultSet));
+            }
+        } catch (SQLException e) {
+            System.out.println("Error retrieving rooms by hotel: " + e.getMessage());
+        }
+        return rooms;
+    }
+
+    public List<Room> getAllRooms() {
+        List<Room> rooms = new ArrayList<>();
+        String sql = "SELECT * FROM public.room";
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                rooms.add(extractRoomFromResultSet(rs));
+            }
+        } catch (SQLException e) {
+            System.out.println("Error retrieving all rooms: " + e.getMessage());
+        }
+        return rooms;
+    }
+
+
 
 }

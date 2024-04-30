@@ -21,7 +21,7 @@ public class AddRoomView extends JFrame {
 
     private final JComboBox<Hotel> cbHotel;
     private final JComboBox<String> cbRoomType;
-    private final JTextField tfStock, tfPriceAdult, tfPriceChild, tfCapacity, tfSquareMeter;
+    private final JTextField tfStock, tfCapacity, tfSquareMeter;
     private final JCheckBox cbTelevision, cbMinibar, cbGameConsole, cbSafeBox, cbProjection;
     private final JButton btnSave, btnListRooms, btnDelete, btnUpdate;
     private final JTable tblRooms;
@@ -33,8 +33,6 @@ public class AddRoomView extends JFrame {
         cbHotel = new JComboBox<>();
         cbRoomType = new JComboBox<>(new String[]{"Single", "Double", "Junior Suite", "Suite"});
         tfStock = new JTextField(10);
-        tfPriceAdult = new JTextField(10);
-        tfPriceChild = new JTextField(10);
         tfCapacity = new JTextField(10);
         tfSquareMeter = new JTextField(10);
         cbTelevision = new JCheckBox("Television");
@@ -90,10 +88,6 @@ public class AddRoomView extends JFrame {
     private void addTextFieldsToPanel(JPanel panel) {
         panel.add(new JLabel("Stock:"));
         panel.add(tfStock);
-        panel.add(new JLabel("Adult Price:"));
-        panel.add(tfPriceAdult);
-        panel.add(new JLabel("Child Price:"));
-        panel.add(tfPriceChild);
         panel.add(new JLabel("Capacity:"));
         panel.add(tfCapacity);
         panel.add(new JLabel("Square Meters:"));
@@ -122,8 +116,6 @@ public class AddRoomView extends JFrame {
                     selectedRoom.setId((int) model.getValueAt(selectedRow, 0));
                     selectedRoom.setType((String) model.getValueAt(selectedRow, 1));
                     selectedRoom.setStock((int) model.getValueAt(selectedRow, 2));
-                    selectedRoom.setPriceAdult((double) model.getValueAt(selectedRow, 3));
-                    selectedRoom.setPriceChild((double) model.getValueAt(selectedRow, 4));
                     selectedRoom.setCapacity((int) model.getValueAt(selectedRow, 5));
                     selectedRoom.setSquareMeter((int) model.getValueAt(selectedRow, 6));
                     selectedRoom.setTelevision((boolean) model.getValueAt(selectedRow, 7));
@@ -133,8 +125,6 @@ public class AddRoomView extends JFrame {
                     selectedRoom.setProjection((boolean) model.getValueAt(selectedRow, 11));
 
                     tfStock.setText(String.valueOf(selectedRoom.getStock()));
-                    tfPriceAdult.setText(String.valueOf(selectedRoom.getPriceAdult()));
-                    tfPriceChild.setText(String.valueOf(selectedRoom.getPriceChild()));
                     tfCapacity.setText(String.valueOf(selectedRoom.getCapacity()));
                     tfSquareMeter.setText(String.valueOf(selectedRoom.getSquareMeter()));
                     cbTelevision.setSelected(selectedRoom.isTelevision());
@@ -167,8 +157,6 @@ public class AddRoomView extends JFrame {
             room.setHotelId(selectedHotel.getId());
             room.setType((String) cbRoomType.getSelectedItem());
             room.setStock(Integer.parseInt(tfStock.getText()));
-            room.setPriceAdult(Double.parseDouble(tfPriceAdult.getText()));
-            room.setPriceChild(Double.parseDouble(tfPriceChild.getText()));
             room.setCapacity(Integer.parseInt(tfCapacity.getText()));
             room.setSquareMeter(Integer.parseInt(tfSquareMeter.getText()));
             room.setTelevision(cbTelevision.isSelected());
@@ -201,7 +189,7 @@ public class AddRoomView extends JFrame {
         DefaultTableModel model = (DefaultTableModel) tblRooms.getModel();
         model.setRowCount(0);
 
-        String[] columnNames = {"ID", "Type", "Stock", "Price Adult", "Price Child", "Capacity", "Square Meter", "Television", "Minibar", "Game Console", "Safe Box", "Projection"};
+        String[] columnNames = {"ID", "Type", "Stock", "Capacity", "Square Meter", "Television", "Minibar", "Game Console", "Safe Box", "Projection"};
         model.setColumnIdentifiers(columnNames);
 
         for (Room room : rooms) {
@@ -209,8 +197,6 @@ public class AddRoomView extends JFrame {
                     room.getId(),
                     room.getType(),
                     room.getStock(),
-                    room.getPriceAdult(),
-                    room.getPriceChild(),
                     room.getCapacity(),
                     room.getSquareMeter(),
                     room.isTelevision(),
@@ -227,8 +213,6 @@ public class AddRoomView extends JFrame {
             if (selectedRow != -1) {
                 Room selectedRoom = rooms.get(selectedRow);
                 tfStock.setText(String.valueOf(selectedRoom.getStock()));
-                tfPriceAdult.setText(String.valueOf(selectedRoom.getPriceAdult()));
-                tfPriceChild.setText(String.valueOf(selectedRoom.getPriceChild()));
                 tfCapacity.setText(String.valueOf(selectedRoom.getCapacity()));
                 tfSquareMeter.setText(String.valueOf(selectedRoom.getSquareMeter()));
                 cbTelevision.setSelected(selectedRoom.isTelevision());
@@ -251,8 +235,6 @@ public class AddRoomView extends JFrame {
         cbHotel.setSelectedIndex(0);
         cbRoomType.setSelectedIndex(0);
         tfStock.setText("");
-        tfPriceAdult.setText("");
-        tfPriceChild.setText("");
         tfCapacity.setText("");
         tfSquareMeter.setText("");
         cbTelevision.setSelected(false);
@@ -289,8 +271,6 @@ public class AddRoomView extends JFrame {
         room.setId((int) tblRooms.getValueAt(selectedRow, 0));
         room.setType((String) cbRoomType.getSelectedItem());
         room.setStock(Integer.parseInt(tfStock.getText()));
-        room.setPriceAdult(Double.parseDouble(tfPriceAdult.getText()));
-        room.setPriceChild(Double.parseDouble(tfPriceChild.getText()));
         room.setCapacity(Integer.parseInt(tfCapacity.getText()));
         room.setSquareMeter(Integer.parseInt(tfSquareMeter.getText()));
         room.setTelevision(cbTelevision.isSelected());
