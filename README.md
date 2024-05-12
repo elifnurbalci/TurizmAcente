@@ -1,6 +1,3 @@
-Short video link: 
-https://drive.google.com/file/d/1gN5PCjet8e_gWA8_ksn5LneZTsN9o2FB/view?usp=sharing
-
 
 To do list:
 - make reservation
